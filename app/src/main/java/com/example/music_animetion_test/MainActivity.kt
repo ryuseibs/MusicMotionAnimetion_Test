@@ -35,7 +35,14 @@ class MainActivity : AppCompatActivity() {
             MediaStore.Audio.Media.ALBUM,       // アルバム名
             MediaStore.Audio.Media.DATA     // データパス(ファイルパス)
         )
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+
+        // 取得したいフォルダのパス（末尾に "%" をつけることで「このフォルダ内」を指定）
+        val selection = "(${MediaStore.Audio.Media.DATA} LIKE ? OR ${MediaStore.Audio.Media.DATA} LIKE ?) " +
+                "AND ${MediaStore.Audio.Media.IS_MUSIC} != 0"
+
+        val selectionArgs = arrayOf(
+            "/storage/emulated/0/Music/%",    // Musicフォルダ内
+        )
         val cursor: Cursor? = context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             projection,
