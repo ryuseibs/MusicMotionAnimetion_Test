@@ -8,16 +8,25 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import android.content.ContentResolver
+import android.content.pm.PackageManager
+import android.os.Build
+import android.Manifest
 
 data class Song(val title: String, val artist: String, val album: String, val datapass: String)
 
 class MainActivity : AppCompatActivity() {
 
+    private val REQUEST_CODE = 100
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        //権限チェック実行
+        checkPermission()
+
         // 曲情報の取得
+        Log.d("MusicList", "onCreate() started")
         val songs = getLocalMusic(this)
 
         // 曲情報をログに表示
@@ -26,8 +35,35 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //権限チェック用の関数
+    private fun checkPermission(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(Manifest.permission.READ_MEDIA_AUDIO), REQUEST_CODE)
+            }
+        } else {
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_CODE)
+            }
+        }
+    }
+
+    //権限リクエスト結果を処理
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.d("Permission", "ストレージアクセス権限が許可されました")
+                getLocalMusic(this)
+            } else {
+                Log.e("Permission", "ストレージアクセス権限が拒否されました")
+            }
+        }
+    }
+
     // 曲情報を取得するメソッド
-    fun getLocalMusic(context: Context): List<Song> {
+    private fun getLocalMusic(context: Context): List<Song> {
+        Log.d("MusicList", "getLocalMusic() is called")
         val songList = mutableListOf<Song>()
         val projection = arrayOf(
             MediaStore.Audio.Media.TITLE,       // 曲名
@@ -37,19 +73,24 @@ class MainActivity : AppCompatActivity() {
         )
 
         // 取得したいフォルダのパス（末尾に "%" をつけることで「このフォルダ内」を指定）
-        val selection = "(${MediaStore.Audio.Media.DATA} LIKE ? OR ${MediaStore.Audio.Media.DATA} LIKE ?) " +
-                "AND ${MediaStore.Audio.Media.IS_MUSIC} != 0"
-
-        val selectionArgs = arrayOf(
-            "/storage/emulated/0/Music/%",    // Musicフォルダ内
-        )
+        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
         val cursor: Cursor? = context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             projection,
             selection,
             null,
-            null)
+            MediaStore.Audio.Media.DATE_ADDED + " DESC" // 新しい順に並べる
+        )
 
+        if (cursor == null) {
+            Log.e("MusicList", "Cursor is null") // ← これが出たら問題あり
+        }
+
+        Log.d("MusicList", "Cursor retrieved, count: ${cursor?.count}")
+
+        if (cursor?.count == 0) {
+            Log.w("MusicList", "No music found in the MediaStore.")
+        }
         cursor?.use {
             val titleIndex = it.getColumnIndex(MediaStore.Audio.Media.TITLE)
             val artistIndex = it.getColumnIndex(MediaStore.Audio.Media.ARTIST)
@@ -65,6 +106,8 @@ class MainActivity : AppCompatActivity() {
                 songList.add(Song(title, artist, album, data))
                 Log.d("MusicInfo", "Title: $title, Artist: $artist, Album: $album, Data: $data")
             }
+            cursor.close()
+            Log.d("MusicList", "getLocalMusic method finished")
         }
 
         return songList
