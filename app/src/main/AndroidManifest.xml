@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <!--Android 12 (API 31) 以下の権限(読み取り)要求-->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <!--Android 13 (API 33) 以降の権限(読み取り)要求-->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
