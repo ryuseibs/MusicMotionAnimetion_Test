@@ -11,16 +11,24 @@ import android.content.ContentResolver
 import android.content.pm.PackageManager
 import android.os.Build
 import android.Manifest
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 data class Song(val title: String, val artist: String, val album: String, val datapass: String)
 
 class MainActivity : AppCompatActivity() {
 
     private val REQUEST_CODE = 100
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var musicAdapter: MusicAdapter
+    private val musicList = mutableListOf<MusicItem>() // 曲リスト
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        recyclerView = findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
         //権限チェック実行
         checkPermission()
@@ -33,6 +41,13 @@ class MainActivity : AppCompatActivity() {
         for (song in songs) {
             Log.d("MusicList", "Title: ${song.title}, Artist: ${song.artist}, Album: ${song.album}, Data: ${song.datapass}")
         }
+
+        // 取得した曲をリストに追加
+        loadMusic()
+
+        // Adapterをセット
+        musicAdapter = MusicAdapter(musicList)
+        recyclerView.adapter = musicAdapter
     }
 
     //権限チェック用の関数
@@ -111,5 +126,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         return songList
+    }
+
+    // 曲情報を取得する（View)
+    private fun loadMusic() {
+        // 仮のデータ（実際は取得した音楽データを入れる）
+        musicList.add(MusicItem("Song 1", "Artist A"))
+        musicList.add(MusicItem("Song 2", "Artist B"))
+        musicList.add(MusicItem("Song 3", "Artist C"))
+
+        // Adapterに通知して更新
+        musicAdapter.notifyDataSetChanged()
     }
 }
