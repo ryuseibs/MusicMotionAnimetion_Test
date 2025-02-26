@@ -8,22 +8,14 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import android.content.ContentResolver
-import android.content.pm.PackageManager
-import android.os.Build
-import android.Manifest
 
 data class Song(val title: String, val artist: String, val album: String, val datapass: String)
 
 class MainActivity : AppCompatActivity() {
 
-    private val REQUEST_CODE =100
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        //権限チェック実行
-        checkPermission()
 
         // 曲情報の取得
         val songs = getLocalMusic(this)
@@ -34,34 +26,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    //権限チェック用の関数
-    private fun checkPermission(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (checkSelfPermission(Manifest.permission.READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(arrayOf(Manifest.permission.READ_MEDIA_AUDIO), REQUEST_CODE)
-            }
-        } else {
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_CODE)
-            }
-        }
-    }
-
-    //権限リクエスト結果を処理
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d("Permission", "ストレージアクセス権限が許可されました")
-                getLocalMusic(this)
-            } else {
-                Log.e("Permission", "ストレージアクセス権限が拒否されました")
-            }
-        }
-    }
-
     // 曲情報を取得するメソッド
-    private fun getLocalMusic(context: Context): List<Song> {
+    fun getLocalMusic(context: Context): List<Song> {
         val songList = mutableListOf<Song>()
         val projection = arrayOf(
             MediaStore.Audio.Media.TITLE,       // 曲名
