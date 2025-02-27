@@ -11,6 +11,7 @@ import android.content.ContentResolver
 import android.content.pm.PackageManager
 import android.os.Build
 import android.Manifest
+import android.media.MediaPlayer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
@@ -22,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var musicAdapter: MusicAdapter
     private var musicList: MutableList<MusicItem> = mutableListOf() // 曲リスト
+    private var mediaPlayer: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -157,4 +159,14 @@ class MainActivity : AppCompatActivity() {
         musicAdapter.notifyDataSetChanged()
         Log.d("MusicDebug", "RecyclerView updated, total items: ${musicList.size}")
     }
+
+    private fun playMusic(musicUri: Uri) {
+        mediaPlayer?.release() // 既存のMediaPlayerを解放
+        mediaPlayer = MediaPlayer().apply {
+            setDataSource(this@MainActivity, musicUri)
+            setOnPreparedListener { start() } // 準備完了したら再生
+            prepareAsync()
+        }
+    }
+
 }
