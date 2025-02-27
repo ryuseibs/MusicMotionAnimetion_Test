@@ -1,5 +1,6 @@
 package com.example.music_animetion_test
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,6 +28,7 @@ class MusicAdapter(private val musicList: List<MusicItem>) :
 
     override fun onBindViewHolder(holder: MusicViewHolder, position: Int) {
         val item = musicList[position]
+        Log.d("MusicDebug", "Binding ViewHolder: ${item.title} by ${item.artist}")  // 追加
         holder.titleTextView.text = item.title
         holder.artistTextView.text = item.artist
     }

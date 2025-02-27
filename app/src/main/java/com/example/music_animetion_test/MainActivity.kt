@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
     private val REQUEST_CODE = 100
     private lateinit var recyclerView: RecyclerView
     private lateinit var musicAdapter: MusicAdapter
-    private val musicList = mutableListOf<MusicItem>() // 曲リスト
+    private var musicList: MutableList<MusicItem> = mutableListOf() // 曲リスト
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,12 +42,12 @@ class MainActivity : AppCompatActivity() {
             Log.d("MusicList", "Title: ${song.title}, Artist: ${song.artist}, Album: ${song.album}, Data: ${song.datapass}")
         }
 
-        // 取得した曲をリストに追加
-        loadMusic()
-
         // Adapterをセット
         musicAdapter = MusicAdapter(musicList)
         recyclerView.adapter = musicAdapter
+
+        // 取得した曲をリストに追加
+        loadMusic()
     }
 
     //権限チェック用の関数
@@ -130,12 +130,31 @@ class MainActivity : AppCompatActivity() {
 
     // 曲情報を取得する（View)
     private fun loadMusic() {
-        // 仮のデータ（実際は取得した音楽データを入れる）
-        musicList.add(MusicItem("Song 1", "Artist A"))
-        musicList.add(MusicItem("Song 2", "Artist B"))
-        musicList.add(MusicItem("Song 3", "Artist C"))
+        Log.d("MusicDebug", "loadMusic() called")  // 確認用ログ
 
-        // Adapterに通知して更新
+        val cursor = contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(MediaStore.Audio.Media.TITLE,
+                    MediaStore.Audio.Media.ARTIST),
+            null,
+            null,
+            null
+        )
+        cursor?.use {
+            val titleColumn = it.getColumnIndex(MediaStore.Audio.Media.TITLE)
+            val artistColumn = it.getColumnIndex(MediaStore.Audio.Media.ARTIST)
+
+            while (it.moveToNext()) {
+                val title = it.getString(titleColumn)
+                val artist = it.getString(artistColumn)
+                Log.d("MusicDebug", "Found song: $title by $artist")  // デバッグ用
+                musicList.add(MusicItem(title, artist))
+            }
+        }
+        Log.d("MusicDebug", "Retrieved ${musicList.size} songs")  // 取得件数の確認
+
+        // RecyclerViewにデータがセットされたことを通知
         musicAdapter.notifyDataSetChanged()
+        Log.d("MusicDebug", "RecyclerView updated, total items: ${musicList.size}")
     }
 }
