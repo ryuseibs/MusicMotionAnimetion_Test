@@ -13,6 +13,7 @@ import android.os.Build
 import android.Manifest
 import android.content.ContentUris
 import android.media.MediaPlayer
+import android.widget.Button
 import android.widget.ListView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -26,11 +27,23 @@ class MainActivity : AppCompatActivity() {
     private lateinit var musicAdapter: MusicAdapter
     private lateinit var listView: ListView
     private var musicList: MutableList<MusicItem> = mutableListOf() // 曲リスト
-    private var mediaPlayer: MediaPlayer? = null
+    private lateinit var mediaPlayer: MediaPlayer
+    private lateinit var btnPlayPause: Button
+    private var isPlaying = false  // 再生中かどうかを管理するフラグ
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        btnPlayPause = findViewById(R.id.btnPlayPause)  // ボタンを取得
+
+        btnPlayPause.setOnClickListener {
+            if (isPlaying) {
+                pauseMusic()
+            } else {
+                playMusic()
+            }
+        }
 
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -58,9 +71,36 @@ class MainActivity : AppCompatActivity() {
             playMusic(music.uri) // 選択した曲を再生
         }
 
+        listView = findViewById(R.id.listView)  // listView を初期化
+
         listView.setOnItemClickListener { _, _, position, _ ->
             val music = musicList[position]
             playMusic(music.uri) // 修正後の Uri を渡す
+        }
+    }
+
+    private fun playMusic() {
+        if (!::mediaPlayer.isInitialized) {
+            mediaPlayer = MediaPlayer()  // MediaPlayer を初期化
+        }
+
+        mediaPlayer.start()
+        isPlaying = true
+        btnPlayPause.text = "停止"  // ボタンのテキストを変更
+    }
+
+    private fun pauseMusic() {
+        if (::mediaPlayer.isInitialized && mediaPlayer.isPlaying) {
+            mediaPlayer.pause()
+            isPlaying = false
+            btnPlayPause.text = "再生"
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::mediaPlayer.isInitialized) {
+            mediaPlayer.release()  // リソース解放
         }
     }
 
