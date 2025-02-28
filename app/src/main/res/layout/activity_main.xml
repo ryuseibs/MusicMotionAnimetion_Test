@@ -6,20 +6,26 @@
     android:gravity="center_horizontal"
     android:padding="16dp">
 
+    <!-- RecyclerView: 高さを調整して、画面の上部に適切に配置 -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
+    <!-- ListView: RecyclerViewと同じ高さのバランス -->
     <ListView
         android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
 
+    <!-- ボタンを画面の一番下に配置 -->
     <Button
         android:id="@+id/btnPlayPause"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="再生" />
+        android:text="再生"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"/>
 </LinearLayout>

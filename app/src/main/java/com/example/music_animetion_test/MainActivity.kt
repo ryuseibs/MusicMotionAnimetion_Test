@@ -12,31 +12,34 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.Manifest
 import android.content.ContentUris
+import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.widget.Button
-import android.widget.ListView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-data class Song(val title: String, val artist: String, val album: String, val uri: Uri)
+data class Song(val title: String, val artist: String, val album: String, val datapass: String)
 
 class MainActivity : AppCompatActivity() {
 
     private val REQUEST_CODE = 100
     private lateinit var recyclerView: RecyclerView
     private lateinit var musicAdapter: MusicAdapter
-    private lateinit var listView: ListView
     private var musicList: MutableList<MusicItem> = mutableListOf() // 曲リスト
-    private lateinit var mediaPlayer: MediaPlayer
+    private var mediaPlayer: MediaPlayer? = null
     private lateinit var btnPlayPause: Button
-    private var isPlaying = false  // 再生中かどうかを管理するフラグ
+    private var isPlaying = false // 再生中かどうかを管理
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        btnPlayPause = findViewById(R.id.btnPlayPause)  // ボタンを取得
+        btnPlayPause = findViewById(R.id.btnPlayPause)
 
+        recyclerView = findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        // 再生・停止ボタン
         btnPlayPause.setOnClickListener {
             if (isPlaying) {
                 pauseMusic()
@@ -45,8 +48,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        recyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
 
         //権限チェック実行
         checkPermission()
@@ -57,7 +58,7 @@ class MainActivity : AppCompatActivity() {
 
         // 曲情報をログに表示
         for (song in songs) {
-            Log.d("MusicList", "Title: ${song.title}, Artist: ${song.artist}, Album: ${song.album}, Uri: ${song.uri}")
+            Log.d("MusicList", "Title: ${song.title}, Artist: ${song.artist}, Album: ${song.album}, Data: ${song.datapass}")
         }
 
         // Adapterをセット
@@ -66,42 +67,6 @@ class MainActivity : AppCompatActivity() {
 
         // 取得した曲をリストに追加
         loadMusic()
-
-        musicAdapter.setOnItemClickListener { music ->
-            playMusic(music.uri) // 選択した曲を再生
-        }
-
-        listView = findViewById(R.id.listView)  // listView を初期化
-
-        listView.setOnItemClickListener { _, _, position, _ ->
-            val music = musicList[position]
-            playMusic(music.uri) // 修正後の Uri を渡す
-        }
-    }
-
-    private fun playMusic() {
-        if (!::mediaPlayer.isInitialized) {
-            mediaPlayer = MediaPlayer()  // MediaPlayer を初期化
-        }
-
-        mediaPlayer.start()
-        isPlaying = true
-        btnPlayPause.text = "停止"  // ボタンのテキストを変更
-    }
-
-    private fun pauseMusic() {
-        if (::mediaPlayer.isInitialized && mediaPlayer.isPlaying) {
-            mediaPlayer.pause()
-            isPlaying = false
-            btnPlayPause.text = "再生"
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        if (::mediaPlayer.isInitialized) {
-            mediaPlayer.release()  // リソース解放
-        }
     }
 
     //権限チェック用の関数
@@ -139,6 +104,7 @@ class MainActivity : AppCompatActivity() {
             MediaStore.Audio.Media.TITLE,       // 曲名
             MediaStore.Audio.Media.ARTIST,      // アーティスト名
             MediaStore.Audio.Media.ALBUM,       // アルバム名
+            MediaStore.Audio.Media.DATA     // データパス(ファイルパス)
         )
 
         // 取得したいフォルダのパス（末尾に "%" をつけることで「このフォルダ内」を指定）
@@ -146,16 +112,16 @@ class MainActivity : AppCompatActivity() {
         val cursor: Cursor? = context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             projection,
+            selection,
             null,
-            null
+            MediaStore.Audio.Media.DATE_ADDED + " DESC" // 新しい順に並べる
         )
 
-        if (cursor == null || cursor.count == 0) {
-            //曲データが取得できているかどうか
-            Log.e("MusicList", "No music found or cursor is null")
-        } else {
-            Log.d("MusicList", "Music count: ${cursor.count}")
+        if (cursor == null) {
+            Log.e("MusicList", "Cursor is null") // ← これが出たら問題あり
         }
+
+        Log.d("MusicList", "Cursor retrieved, count: ${cursor?.count}")
 
         if (cursor?.count == 0) {
             Log.w("MusicList", "No music found in the MediaStore.")
@@ -165,20 +131,21 @@ class MainActivity : AppCompatActivity() {
             val titleIndex = it.getColumnIndex(MediaStore.Audio.Media.TITLE)
             val artistIndex = it.getColumnIndex(MediaStore.Audio.Media.ARTIST)
             val albumIndex = it.getColumnIndex(MediaStore.Audio.Media.ALBUM)
+            val dataIndex = it.getColumnIndex(MediaStore.Audio.Media.DATA)
 
             while (it.moveToNext()) {
                 val id = it.getLong(idColumn)
                 val title = it.getString(titleIndex) ?: "Unknown Title"
                 val artist = it.getString(artistIndex) ?: "Unknown Artist"
                 val album = it.getString(albumIndex) ?: "Unknown Album"
+                val data = it.getString(dataIndex) ?: "Found not data"
 
-                // Uri を生成する
-                val contentUri: Uri = ContentUris.withAppendedId(
+                val contentUri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id
                 )
 
-                songList.add(Song(title, artist, album, contentUri))
-                Log.d("MusicInfo", "Title: $title, Artist: $artist, Album: $album, Uri: $contentUri")
+                songList.add(Song(title, artist, album, data))
+                Log.d("MusicInfo", "Title: $title, Artist: $artist, Album: $album, Data: $contentUri")
             }
             cursor.close()
             Log.d("MusicList", "getLocalMusic method finished")
@@ -194,31 +161,20 @@ class MainActivity : AppCompatActivity() {
         val cursor = contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             arrayOf(MediaStore.Audio.Media.TITLE,
-                    MediaStore.Audio.Media.ARTIST),
+                MediaStore.Audio.Media.ARTIST),
             null,
             null,
             null
         )
         cursor?.use {
-            val idColumn = it.getColumnIndex(MediaStore.Audio.Media._ID)
-            if (idColumn == -1) {
-                Log.e("MusicList", "ID column not found")
-                return@use  // ここでスキップ
-            }
             val titleColumn = it.getColumnIndex(MediaStore.Audio.Media.TITLE)
             val artistColumn = it.getColumnIndex(MediaStore.Audio.Media.ARTIST)
 
             while (it.moveToNext()) {
-                val id = it.getLong(idColumn)
                 val title = it.getString(titleColumn)
                 val artist = it.getString(artistColumn)
                 Log.d("MusicDebug", "Found song: $title by $artist")  // デバッグ用
-
-                // Uri を生成する
-                val contentUri: Uri = ContentUris.withAppendedId(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id
-                )
-                musicList.add(MusicItem(title, artist, contentUri))
+                musicList.add(MusicItem(title, artist))
             }
         }
         Log.d("MusicDebug", "Retrieved ${musicList.size} songs")  // 取得件数の確認
@@ -228,13 +184,36 @@ class MainActivity : AppCompatActivity() {
         Log.d("MusicDebug", "RecyclerView updated, total items: ${musicList.size}")
     }
 
-    private fun playMusic(musicUri: Uri) {
-        mediaPlayer?.release() // 既存のMediaPlayerを解放
-        mediaPlayer = MediaPlayer().apply {
-            setDataSource(this@MainActivity, musicUri)
-            setOnPreparedListener { start() } // 準備完了したら再生
-            prepareAsync()
+    private fun playMusic() {
+        if (mediaPlayer == null) {
+            val musicUri: Uri = Uri.parse("content://media/external/audio/media/1000000723") // 仮のURI
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(applicationContext, musicUri)
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build()
+                )
+                prepare()
+                start()
+            }
+        } else {
+            mediaPlayer?.start()
         }
+        isPlaying = true
+        btnPlayPause.text = "停止"
     }
 
+    private fun pauseMusic() {
+        mediaPlayer?.pause()
+        isPlaying = false
+        btnPlayPause.text = "再生"
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mediaPlayer?.release()
+        mediaPlayer = null
+    }
 }
