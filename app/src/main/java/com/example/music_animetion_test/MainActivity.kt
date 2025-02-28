@@ -11,17 +11,20 @@ import android.content.ContentResolver
 import android.content.pm.PackageManager
 import android.os.Build
 import android.Manifest
+import android.content.ContentUris
 import android.media.MediaPlayer
+import android.widget.ListView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-data class Song(val title: String, val artist: String, val album: String, val datapass: String)
+data class Song(val title: String, val artist: String, val album: String, val uri: Uri)
 
 class MainActivity : AppCompatActivity() {
 
     private val REQUEST_CODE = 100
     private lateinit var recyclerView: RecyclerView
     private lateinit var musicAdapter: MusicAdapter
+    private lateinit var listView: ListView
     private var musicList: MutableList<MusicItem> = mutableListOf() // 曲リスト
     private var mediaPlayer: MediaPlayer? = null
 
@@ -41,7 +44,7 @@ class MainActivity : AppCompatActivity() {
 
         // 曲情報をログに表示
         for (song in songs) {
-            Log.d("MusicList", "Title: ${song.title}, Artist: ${song.artist}, Album: ${song.album}, Data: ${song.datapass}")
+            Log.d("MusicList", "Title: ${song.title}, Artist: ${song.artist}, Album: ${song.album}, Uri: ${song.uri}")
         }
 
         // Adapterをセット
@@ -50,6 +53,15 @@ class MainActivity : AppCompatActivity() {
 
         // 取得した曲をリストに追加
         loadMusic()
+
+        musicAdapter.setOnItemClickListener { music ->
+            playMusic(music.uri) // 選択した曲を再生
+        }
+
+        listView.setOnItemClickListener { _, _, position, _ ->
+            val music = musicList[position]
+            playMusic(music.uri) // 修正後の Uri を渡す
+        }
     }
 
     //権限チェック用の関数
@@ -83,10 +95,10 @@ class MainActivity : AppCompatActivity() {
         Log.d("MusicList", "getLocalMusic() is called")
         val songList = mutableListOf<Song>()
         val projection = arrayOf(
+            MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.TITLE,       // 曲名
             MediaStore.Audio.Media.ARTIST,      // アーティスト名
             MediaStore.Audio.Media.ALBUM,       // アルバム名
-            MediaStore.Audio.Media.DATA     // データパス(ファイルパス)
         )
 
         // 取得したいフォルダのパス（末尾に "%" をつけることで「このフォルダ内」を指定）
@@ -94,34 +106,39 @@ class MainActivity : AppCompatActivity() {
         val cursor: Cursor? = context.contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
             projection,
-            selection,
             null,
-            MediaStore.Audio.Media.DATE_ADDED + " DESC" // 新しい順に並べる
+            null
         )
 
-        if (cursor == null) {
-            Log.e("MusicList", "Cursor is null") // ← これが出たら問題あり
+        if (cursor == null || cursor.count == 0) {
+            //曲データが取得できているかどうか
+            Log.e("MusicList", "No music found or cursor is null")
+        } else {
+            Log.d("MusicList", "Music count: ${cursor.count}")
         }
-
-        Log.d("MusicList", "Cursor retrieved, count: ${cursor?.count}")
 
         if (cursor?.count == 0) {
             Log.w("MusicList", "No music found in the MediaStore.")
         }
         cursor?.use {
+            val idColumn = it.getColumnIndex(MediaStore.Audio.Media._ID)
             val titleIndex = it.getColumnIndex(MediaStore.Audio.Media.TITLE)
             val artistIndex = it.getColumnIndex(MediaStore.Audio.Media.ARTIST)
             val albumIndex = it.getColumnIndex(MediaStore.Audio.Media.ALBUM)
-            val dataIndex = it.getColumnIndex(MediaStore.Audio.Media.DATA)
 
             while (it.moveToNext()) {
+                val id = it.getLong(idColumn)
                 val title = it.getString(titleIndex) ?: "Unknown Title"
                 val artist = it.getString(artistIndex) ?: "Unknown Artist"
                 val album = it.getString(albumIndex) ?: "Unknown Album"
-                val data = it.getString(dataIndex) ?: "Found not data"
 
-                songList.add(Song(title, artist, album, data))
-                Log.d("MusicInfo", "Title: $title, Artist: $artist, Album: $album, Data: $data")
+                // Uri を生成する
+                val contentUri: Uri = ContentUris.withAppendedId(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id
+                )
+
+                songList.add(Song(title, artist, album, contentUri))
+                Log.d("MusicInfo", "Title: $title, Artist: $artist, Album: $album, Uri: $contentUri")
             }
             cursor.close()
             Log.d("MusicList", "getLocalMusic method finished")
@@ -143,14 +160,25 @@ class MainActivity : AppCompatActivity() {
             null
         )
         cursor?.use {
+            val idColumn = it.getColumnIndex(MediaStore.Audio.Media._ID)
+            if (idColumn == -1) {
+                Log.e("MusicList", "ID column not found")
+                return@use  // ここでスキップ
+            }
             val titleColumn = it.getColumnIndex(MediaStore.Audio.Media.TITLE)
             val artistColumn = it.getColumnIndex(MediaStore.Audio.Media.ARTIST)
 
             while (it.moveToNext()) {
+                val id = it.getLong(idColumn)
                 val title = it.getString(titleColumn)
                 val artist = it.getString(artistColumn)
                 Log.d("MusicDebug", "Found song: $title by $artist")  // デバッグ用
-                musicList.add(MusicItem(title, artist))
+
+                // Uri を生成する
+                val contentUri: Uri = ContentUris.withAppendedId(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id
+                )
+                musicList.add(MusicItem(title, artist, contentUri))
             }
         }
         Log.d("MusicDebug", "Retrieved ${musicList.size} songs")  // 取得件数の確認
