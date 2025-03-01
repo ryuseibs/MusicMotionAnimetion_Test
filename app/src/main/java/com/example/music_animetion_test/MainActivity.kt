@@ -17,6 +17,9 @@ import android.media.MediaPlayer
 import android.widget.Button
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import android.os.Handler
+import android.os.Looper
+import android.widget.SeekBar
 
 data class Song(val title: String, val artist: String, val album: String, val datapass: String, val uri: Uri)
 
@@ -30,6 +33,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnPlayPause: Button
     private var isPlaying = false // 再生中かどうかを管理
     private var currentIndex = 0 // 現在再生中の曲のインデックス
+    private lateinit var seekBar: SeekBar
+    private val handler = Handler(Looper.getMainLooper()) // 🎯 メインスレッドで更新するハンドラー
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +65,8 @@ class MainActivity : AppCompatActivity() {
         btnNext.setOnClickListener {
             playNextSong()
         }
+        seekBar = findViewById(R.id.seekBar)
+        seekBar.max = 0 // 最初は 0 にしておく
 
         //権限チェック実行
         checkPermission()
@@ -217,6 +224,14 @@ class MainActivity : AppCompatActivity() {
             )
             prepare()
             start()
+
+            // 🎯 シークバーの最大値を曲の長さに設定
+            seekBar.max = duration
+            seekBar.progress = 0
+
+            // 🎯 シークバーの更新開始
+            handler.post(updateSeekBar)
+            Log.d("SeekBar", "Max: ${seekBar.max}, Progress: ${seekBar.progress}")
         }
         isPlaying = true
         btnPlayPause.text = "停止"
@@ -239,6 +254,16 @@ class MainActivity : AppCompatActivity() {
         if (musicList.isNotEmpty()) {
             currentIndex = if (currentIndex - 1 < 0) musicList.size - 1 else currentIndex - 1
             playMusic(musicList[currentIndex].uri)
+        }
+    }
+
+    private val updateSeekBar = object : Runnable {
+        override fun run() {
+            mediaPlayer?.let {
+                val currentPosition = it.currentPosition // 現在の再生位置
+                seekBar.progress = currentPosition // シークバーを更新
+                handler.postDelayed(this, 500) // 0.5秒ごとに更新
+            }
         }
     }
 
