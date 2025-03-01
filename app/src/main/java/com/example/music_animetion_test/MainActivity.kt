@@ -251,15 +251,15 @@ class MainActivity : AppCompatActivity() {
             prepare()
             start()
 
-            // 🎯 シークバーの最大値を曲の長さに設定
+            // シークバーの最大値を曲の長さに設定
             seekBar.max = duration
             seekBar.progress = 0
 
-            // 🎯 シークバーの更新開始
+            // シークバーの更新開始
             handler.post(updateSeekBar)
             Log.d("SeekBar", "Max: ${seekBar.max}, Progress: ${seekBar.progress}")
 
-            // 🎯 アートワークの表示 & アニメーション適用
+            // アートワークの表示 & アニメーション適用
             val albumArt = getAlbumArt(albumId)
             if (albumArt != null) {
                 artworkImage.setImageBitmap(albumArt)
@@ -269,7 +269,11 @@ class MainActivity : AppCompatActivity() {
                 artworkImage.visibility = View.VISIBLE
             }
 
-            applyArtworkAnimation() // 🎯 アートワークが変わるたびにアニメーションを適用
+            applyArtworkAnimation() // アートワークが変わるたびにアニメーションを適用
+
+            // 曲が再生されている間は回転アニメーションを適用
+            val rotate = AnimationUtils.loadAnimation(this@MainActivity, R.anim.rotate)
+            artworkImage.startAnimation(rotate)
         }
         isPlaying = true
         btnPlayPause.text = "停止"
