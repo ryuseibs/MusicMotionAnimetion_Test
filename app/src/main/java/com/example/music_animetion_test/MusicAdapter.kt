@@ -1,5 +1,6 @@
 package com.example.music_animetion_test
 
+import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -8,7 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 // クラス定義（曲情報）
-data class MusicItem(val title: String, val artist: String)
+data class MusicItem(val title: String, val artist: String, val uri: Uri)
 
 // Adapterクラス
 class MusicAdapter(private val musicList: List<MusicItem>) :
@@ -28,7 +29,7 @@ class MusicAdapter(private val musicList: List<MusicItem>) :
 
     override fun onBindViewHolder(holder: MusicViewHolder, position: Int) {
         val item = musicList[position]
-        Log.d("MusicDebug", "Binding ViewHolder: ${item.title} by ${item.artist}")  // 追加
+        Log.d("MusicDebug", "Binding ViewHolder: ${item.title} by ${item.artist} URI:${item.uri}" )  // 追加
         holder.titleTextView.text = item.title
         holder.artistTextView.text = item.artist
     }

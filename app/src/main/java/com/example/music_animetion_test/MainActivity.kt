@@ -18,7 +18,7 @@ import android.widget.Button
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-data class Song(val title: String, val artist: String, val album: String, val datapass: String)
+data class Song(val title: String, val artist: String, val album: String, val datapass: String, val uri: Uri)
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private var mediaPlayer: MediaPlayer? = null
     private lateinit var btnPlayPause: Button
     private var isPlaying = false // 再生中かどうかを管理
+    private var currentIndex = 0 // 現在再生中の曲のインデックス
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,10 +45,21 @@ class MainActivity : AppCompatActivity() {
             if (isPlaying) {
                 pauseMusic()
             } else {
-                playMusic()
+                playMusic(musicList[currentIndex].uri)
             }
         }
 
+        // 前の曲・次の曲ボタン
+        val btnPrev: Button = findViewById(R.id.btnPrev)
+        val btnNext: Button = findViewById(R.id.btnNext)
+
+        btnPrev.setOnClickListener {
+            playPreviousSong()
+        }
+
+        btnNext.setOnClickListener {
+            playNextSong()
+        }
 
         //権限チェック実行
         checkPermission()
@@ -144,7 +156,7 @@ class MainActivity : AppCompatActivity() {
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id
                 )
 
-                songList.add(Song(title, artist, album, data))
+                songList.add(Song(title, artist, album, data, contentUri))
                 Log.d("MusicInfo", "Title: $title, Artist: $artist, Album: $album, Data: $contentUri")
             }
             cursor.close()
@@ -160,21 +172,30 @@ class MainActivity : AppCompatActivity() {
 
         val cursor = contentResolver.query(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            arrayOf(MediaStore.Audio.Media.TITLE,
+            arrayOf(
+                MediaStore.Audio.Media._ID,
+                MediaStore.Audio.Media.TITLE,
                 MediaStore.Audio.Media.ARTIST),
             null,
             null,
             null
         )
         cursor?.use {
+            val idColumn = it.getColumnIndex(MediaStore.Audio.Media._ID)
             val titleColumn = it.getColumnIndex(MediaStore.Audio.Media.TITLE)
             val artistColumn = it.getColumnIndex(MediaStore.Audio.Media.ARTIST)
 
             while (it.moveToNext()) {
+                val id = it.getLong(idColumn)
                 val title = it.getString(titleColumn)
                 val artist = it.getString(artistColumn)
-                Log.d("MusicDebug", "Found song: $title by $artist")  // デバッグ用
-                musicList.add(MusicItem(title, artist))
+
+                val songUri = ContentUris.withAppendedId(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id
+                )
+
+                Log.d("MusicDebug", "Found song: $title by $artist, URI: $songUri")  // デバッグ用
+                musicList.add(MusicItem(title, artist, songUri))
             }
         }
         Log.d("MusicDebug", "Retrieved ${musicList.size} songs")  // 取得件数の確認
@@ -184,22 +205,18 @@ class MainActivity : AppCompatActivity() {
         Log.d("MusicDebug", "RecyclerView updated, total items: ${musicList.size}")
     }
 
-    private fun playMusic() {
-        if (mediaPlayer == null) {
-            val musicUri: Uri = Uri.parse("content://media/external/audio/media/1000000723") // 仮のURI
-            mediaPlayer = MediaPlayer().apply {
-                setDataSource(applicationContext, musicUri)
-                setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .build()
-                )
-                prepare()
-                start()
-            }
-        } else {
-            mediaPlayer?.start()
+    private fun playMusic(uri: Uri) {
+        mediaPlayer?.release()
+        mediaPlayer = MediaPlayer().apply {
+            setDataSource(applicationContext, uri)
+            setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .build()
+            )
+            prepare()
+            start()
         }
         isPlaying = true
         btnPlayPause.text = "停止"
@@ -209,6 +226,20 @@ class MainActivity : AppCompatActivity() {
         mediaPlayer?.pause()
         isPlaying = false
         btnPlayPause.text = "再生"
+    }
+
+    private fun playNextSong() {
+        if (musicList.isNotEmpty()) {
+            currentIndex = (currentIndex + 1) % musicList.size
+            playMusic(musicList[currentIndex].uri)
+        }
+    }
+
+    private fun playPreviousSong() {
+        if (musicList.isNotEmpty()) {
+            currentIndex = if (currentIndex - 1 < 0) musicList.size - 1 else currentIndex - 1
+            playMusic(musicList[currentIndex].uri)
+        }
     }
 
     override fun onDestroy() {

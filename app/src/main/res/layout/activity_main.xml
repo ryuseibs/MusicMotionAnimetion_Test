@@ -21,11 +21,25 @@
         android:layout_weight="1" />
 
     <!-- ボタンを画面の一番下に配置 -->
+
+    <Button
+        android:id="@+id/btnPrev"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="◀ 前の曲" />
+
     <Button
         android:id="@+id/btnPlayPause"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="再生"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp"/>
+        android:text="▶ 再生"
+        android:layout_marginEnd="8dp"/>
+
+    <Button
+        android:id="@+id/btnNext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="次の曲 ▶"
+        android:layout_marginStart="8dp"/>
 </LinearLayout>
