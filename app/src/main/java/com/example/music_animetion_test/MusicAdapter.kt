@@ -9,7 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 // クラス定義（曲情報）
-data class MusicItem(val title: String, val artist: String, val uri: Uri)
+data class MusicItem(val title: String, val artist: String, val uri: Uri, val albumId: Long)
 
 // Adapterクラス
 class MusicAdapter(private val musicList: List<MusicItem>) :

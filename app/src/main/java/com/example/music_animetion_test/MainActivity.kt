@@ -12,6 +12,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.Manifest
 import android.content.ContentUris
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.widget.Button
@@ -19,7 +21,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import android.widget.SeekBar
+import android.view.animation.AnimationUtils
+import android.widget.ImageView
 
 data class Song(val title: String, val artist: String, val album: String, val datapass: String, val uri: Uri)
 
@@ -34,23 +39,24 @@ class MainActivity : AppCompatActivity() {
     private var isPlaying = false // 再生中かどうかを管理
     private var currentIndex = 0 // 現在再生中の曲のインデックス
     private lateinit var seekBar: SeekBar
-    private val handler = Handler(Looper.getMainLooper()) // 🎯 メインスレッドで更新するハンドラー
+    private val handler = Handler(Looper.getMainLooper()) // メインスレッドで更新するハンドラー
+    private lateinit var artworkImage: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         btnPlayPause = findViewById(R.id.btnPlayPause)
-
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
+        artworkImage = findViewById(R.id.artworkImage)
 
         // 再生・停止ボタン
         btnPlayPause.setOnClickListener {
             if (isPlaying) {
                 pauseMusic()
             } else {
-                playMusic(musicList[currentIndex].uri)
+                playMusic(musicList[currentIndex].uri, musicList[currentIndex].albumId)
             }
         }
 
@@ -65,8 +71,25 @@ class MainActivity : AppCompatActivity() {
         btnNext.setOnClickListener {
             playNextSong()
         }
+
         seekBar = findViewById(R.id.seekBar)
         seekBar.max = 0 // 最初は 0 にしておく
+
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) { // ユーザーが操作した場合のみ
+                    mediaPlayer?.seekTo(progress) // 指定位置に移動
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                handler.removeCallbacks(updateSeekBar) // ユーザーが操作中は更新を止める
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                handler.post(updateSeekBar) // 操作が終わったら更新を再開
+            }
+        })
 
         //権限チェック実行
         checkPermission()
@@ -182,7 +205,8 @@ class MainActivity : AppCompatActivity() {
             arrayOf(
                 MediaStore.Audio.Media._ID,
                 MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.ARTIST),
+                MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media.ALBUM_ID),
             null,
             null,
             null
@@ -191,18 +215,20 @@ class MainActivity : AppCompatActivity() {
             val idColumn = it.getColumnIndex(MediaStore.Audio.Media._ID)
             val titleColumn = it.getColumnIndex(MediaStore.Audio.Media.TITLE)
             val artistColumn = it.getColumnIndex(MediaStore.Audio.Media.ARTIST)
+            val albumColumn = it.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)
 
             while (it.moveToNext()) {
                 val id = it.getLong(idColumn)
                 val title = it.getString(titleColumn)
                 val artist = it.getString(artistColumn)
+                val albumId = it.getLong(albumColumn)
 
                 val songUri = ContentUris.withAppendedId(
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id
                 )
 
-                Log.d("MusicDebug", "Found song: $title by $artist, URI: $songUri")  // デバッグ用
-                musicList.add(MusicItem(title, artist, songUri))
+                Log.d("MusicDebug", "Found song: $title by $artist, URI: $songUri, AlbumID: $albumId")  // デバッグ用
+                musicList.add(MusicItem(title, artist, songUri, albumId))
             }
         }
         Log.d("MusicDebug", "Retrieved ${musicList.size} songs")  // 取得件数の確認
@@ -212,7 +238,7 @@ class MainActivity : AppCompatActivity() {
         Log.d("MusicDebug", "RecyclerView updated, total items: ${musicList.size}")
     }
 
-    private fun playMusic(uri: Uri) {
+    private fun playMusic(uri: Uri, albumId: Long) {
         mediaPlayer?.release()
         mediaPlayer = MediaPlayer().apply {
             setDataSource(applicationContext, uri)
@@ -232,6 +258,18 @@ class MainActivity : AppCompatActivity() {
             // 🎯 シークバーの更新開始
             handler.post(updateSeekBar)
             Log.d("SeekBar", "Max: ${seekBar.max}, Progress: ${seekBar.progress}")
+
+            // 🎯 アートワークの表示 & アニメーション適用
+            val albumArt = getAlbumArt(albumId)
+            if (albumArt != null) {
+                artworkImage.setImageBitmap(albumArt)
+                artworkImage.visibility = View.VISIBLE
+            } else {
+                artworkImage.setImageResource(R.drawable.default_album_art) // デフォルト画像
+                artworkImage.visibility = View.VISIBLE
+            }
+
+            applyArtworkAnimation() // 🎯 アートワークが変わるたびにアニメーションを適用
         }
         isPlaying = true
         btnPlayPause.text = "停止"
@@ -246,14 +284,14 @@ class MainActivity : AppCompatActivity() {
     private fun playNextSong() {
         if (musicList.isNotEmpty()) {
             currentIndex = (currentIndex + 1) % musicList.size
-            playMusic(musicList[currentIndex].uri)
+            playMusic(musicList[currentIndex].uri, musicList[currentIndex].albumId)
         }
     }
 
     private fun playPreviousSong() {
         if (musicList.isNotEmpty()) {
             currentIndex = if (currentIndex - 1 < 0) musicList.size - 1 else currentIndex - 1
-            playMusic(musicList[currentIndex].uri)
+            playMusic(musicList[currentIndex].uri, musicList[currentIndex].albumId)
         }
     }
 
@@ -264,6 +302,28 @@ class MainActivity : AppCompatActivity() {
                 seekBar.progress = currentPosition // シークバーを更新
                 handler.postDelayed(this, 500) // 0.5秒ごとに更新
             }
+        }
+    }
+
+    private fun applyArtworkAnimation() {
+        val fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in)
+        val zoomIn = AnimationUtils.loadAnimation(this, R.anim.zoom_in)
+        val rotate = AnimationUtils.loadAnimation(this, R.anim.rotate)
+
+        artworkImage.startAnimation(fadeIn) // フェードイン適用
+        artworkImage.startAnimation(zoomIn) // ズーム適用
+    }
+
+    private fun getAlbumArt(albumId: Long): Bitmap? {
+        val uri = ContentUris.withAppendedId(
+            Uri.parse("content://media/external/audio/albumart"), albumId
+        )
+        return try {
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                BitmapFactory.decodeStream(inputStream)
+            }
+        } catch (e: Exception) {
+            null // 🎵 画像が取得できなかった場合は `null` を返す
         }
     }
 

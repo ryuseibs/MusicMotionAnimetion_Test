@@ -1,51 +1,67 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center_horizontal"
     android:padding="16dp">
 
-    <!-- RecyclerView: 高さを調整して、画面の上部に適切に配置 -->
+    <!-- 🎵 アートワークをリストの上に配置 -->
+    <ImageView
+        android:id="@+id/artworkImage"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:scaleType="centerCrop"
+        android:visibility="gone"/>
+
+    <!-- 🎵 RecyclerView の高さを調整（リスト表示） -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"/> <!--  画面のバランスを整える -->
 
-    <!-- ListView: RecyclerViewと同じ高さのバランス -->
+    <!-- 🎵 もし `ListView` を使わないなら、ここを削除する -->
     <ListView
         android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="0"/> <!-- `ListView` の高さを 0 にして影響をなくす -->
 
-    <!-- ボタンを画面の一番下に配置 -->
-
-    <Button
-        android:id="@+id/btnPrev"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:text="◀ 前の曲" />
-
-    <Button
-        android:id="@+id/btnPlayPause"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="▶ 再生"
-        android:layout_marginEnd="8dp"/>
-
-    <Button
-        android:id="@+id/btnNext"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="次の曲 ▶"
-        android:layout_marginStart="8dp"/>
-
+    <!-- 🎵 シークバーをボタンの上に配置 -->
     <SeekBar
         android:id="@+id/seekBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"/>
+
+    <!-- 🎵 ボタンを横並びに配置 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/btnPrev"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="◀ 前の曲" />
+
+        <Button
+            android:id="@+id/btnPlayPause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="▶ 再生"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
+            android:id="@+id/btnNext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="次の曲 ▶"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
 </LinearLayout>
