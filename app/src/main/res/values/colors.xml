@@ -8,5 +8,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="buttonColor">#6200EE</color> <!-- 背景色 -->
-    <color name="buttonTextColor">#FFFFFF</color> <!-- 文字色 -->
+    <color name="buttonTextColor">#FFFFFF</color> <!-- 白 -->
+    <color name="backgroundColor">#121212</color> <!-- ダークグレー -->
+    <color name="textColor">#FFFFFF</color> <!-- 白 -->
 </resources>

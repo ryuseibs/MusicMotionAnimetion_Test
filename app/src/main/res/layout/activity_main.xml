@@ -2,9 +2,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/backgroundColor"
     android:padding="16dp">
 
-    <!-- 🎵 アートワークをリストの上に配置 -->
+    <!-- アートワークをリストの上に配置 -->
     <ImageView
         android:id="@+id/artworkImage"
         android:layout_width="200dp"
@@ -16,38 +17,40 @@
         android:background="@drawable/artwork_background"
         android:elevation="8dp"/> <!-- 影を追加 -->
 
-    <!-- 🎵 RecyclerView の高さを調整（リスト表示） -->
+    <!-- RecyclerView の高さを調整（リスト表示） -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"/> <!--  画面のバランスを整える -->
 
-    <!-- 🎵 もし `ListView` を使わないなら、ここを削除する -->
     <ListView
         android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0"/> <!-- `ListView` の高さを 0 にして影響をなくす -->
 
-    <!-- 🎵 シークバーをボタンの上に配置 -->
+    <!-- シークバーをボタンの上に配置 -->
     <SeekBar
         android:id="@+id/seekBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"/>
 
-    <!-- 🎵 ボタンを横並びに配置 -->
+    <!-- ボタンを横並びに配置 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center">
+        android:gravity="center"
+        android:padding="16dp"
+        android:background="@color/backgroundColor">
 
         <Button
             android:id="@+id/btnPrev"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
             android:background="@drawable/rounded_button"
             android:textColor="@color/buttonTextColor"
             android:drawableStart="@drawable/ic_prev"
@@ -70,13 +73,13 @@
             android:id="@+id/btnNext"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
             android:background="@drawable/rounded_button"
             android:textColor="@color/buttonTextColor"
             android:drawableStart="@drawable/ic_next"
             android:text="次"
             android:padding="8dp"
             android:textSize="16sp"/>
-
     </LinearLayout>
 
 </LinearLayout>
