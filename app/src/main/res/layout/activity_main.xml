@@ -12,7 +12,9 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="16dp"
         android:scaleType="centerCrop"
-        android:visibility="gone"/>
+        android:visibility="gone"
+        android:background="@drawable/artwork_background"
+        android:elevation="8dp"/> <!-- 影を追加 -->
 
     <!-- 🎵 RecyclerView の高さを調整（リスト表示） -->
     <androidx.recyclerview.widget.RecyclerView
@@ -74,6 +76,7 @@
             android:text="次"
             android:padding="8dp"
             android:textSize="16sp"/>
+
     </LinearLayout>
 
 </LinearLayout>
