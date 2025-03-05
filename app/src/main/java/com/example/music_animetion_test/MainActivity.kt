@@ -55,8 +55,12 @@ class MainActivity : AppCompatActivity() {
         btnPlayPause.setOnClickListener {
             if (isPlaying) {
                 pauseMusic()
+                btnPlayPause.text = "再生"
+                btnPlayPause.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_play, 0, 0, 0)
             } else {
                 playMusic(musicList[currentIndex].uri, musicList[currentIndex].albumId)
+                btnPlayPause.text = "停止"
+                btnPlayPause.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_pause, 0, 0, 0)
             }
         }
 
