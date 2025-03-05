@@ -46,22 +46,34 @@
             android:id="@+id/btnPrev"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="◀ 前の曲" />
+            android:background="@drawable/rounded_button"
+            android:textColor="@color/buttonTextColor"
+            android:drawableStart="@drawable/ic_prev"
+            android:text="前"
+            android:padding="8dp"
+            android:textSize="16sp"/>
 
         <Button
             android:id="@+id/btnPlayPause"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="▶ 再生"
-            android:layout_marginEnd="8dp"/>
+            android:background="@drawable/rounded_button"
+            android:textColor="@color/buttonTextColor"
+            android:drawableStart="@drawable/ic_play"
+            android:text="再生"
+            android:padding="8dp"
+            android:textSize="16sp"/>
 
         <Button
             android:id="@+id/btnNext"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="次の曲 ▶"
-            android:layout_marginStart="8dp"/>
+            android:background="@drawable/rounded_button"
+            android:textColor="@color/buttonTextColor"
+            android:drawableStart="@drawable/ic_next"
+            android:text="次"
+            android:padding="8dp"
+            android:textSize="16sp"/>
     </LinearLayout>
 
 </LinearLayout>
