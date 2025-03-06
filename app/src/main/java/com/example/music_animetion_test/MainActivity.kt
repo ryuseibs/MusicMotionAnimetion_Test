@@ -12,6 +12,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.Manifest
 import android.content.ContentUris
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.AudioAttributes
@@ -24,6 +25,7 @@ import android.os.Looper
 import android.view.View
 import android.widget.SeekBar
 import android.view.animation.AnimationUtils
+import android.widget.ImageButton
 import android.widget.ImageView
 
 data class Song(val title: String, val artist: String, val album: String, val datapass: String, val uri: Uri)
@@ -50,6 +52,11 @@ class MainActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         artworkImage = findViewById(R.id.artworkImage)
+
+        findViewById<ImageButton>(R.id.btnMusicList).setOnClickListener {
+            val intent = Intent(this, MusicListActivity::class.java)
+            startActivity(intent)
+        }
 
         // 再生・停止ボタン
         btnPlayPause.setOnClickListener {
