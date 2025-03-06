@@ -16,6 +16,9 @@
         android:theme="@style/Theme.Music_Animetion_Test"
         tools:targetApi="31">
         <activity
+            android:name=".AlbumListActivity"
+            android:exported="false" />
+        <activity
             android:name=".MusicListActivity"
             android:exported="false" />
         <activity
