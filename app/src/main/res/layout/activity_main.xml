@@ -56,7 +56,8 @@
             android:drawableStart="@drawable/ic_prev"
             android:text="前"
             android:padding="8dp"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            android:fontFamily="sans-serif-medium"/>
 
         <Button
             android:id="@+id/btnPlayPause"
@@ -67,7 +68,8 @@
             android:drawableStart="@drawable/ic_play"
             android:text="再生"
             android:padding="8dp"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            android:fontFamily="sans-serif-medium"/>
 
         <Button
             android:id="@+id/btnNext"
@@ -79,7 +81,8 @@
             android:drawableStart="@drawable/ic_next"
             android:text="次"
             android:padding="8dp"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            android:fontFamily="sans-serif-medium"/>
     </LinearLayout>
 
 </LinearLayout>

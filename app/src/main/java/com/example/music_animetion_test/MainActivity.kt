@@ -276,8 +276,8 @@ class MainActivity : AppCompatActivity() {
             applyArtworkAnimation() // アートワークが変わるたびにアニメーションを適用
 
             // 曲が再生されている間は回転アニメーションを適用
-            val rotate = AnimationUtils.loadAnimation(this@MainActivity, R.anim.rotate)
-            artworkImage.startAnimation(rotate)
+            //val rotate = AnimationUtils.loadAnimation(this@MainActivity, R.anim.rotate)
+            //artworkImage.startAnimation(rotate)
         }
         isPlaying = true
         btnPlayPause.text = "停止"
