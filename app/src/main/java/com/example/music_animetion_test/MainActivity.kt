@@ -58,6 +58,16 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        findViewById<ImageButton>(R.id.btnAlbumList).setOnClickListener {
+            val intent = Intent(this,AlbumListActivity::class.java)
+            startActivity(intent)
+        }
+
+        findViewById<ImageButton>(R.id.btnArtistList).setOnClickListener {
+            val intent =Intent(this,ArtistListActivity::class.java)
+            startActivity(intent)
+        }
+
         // 再生・停止ボタン
         btnPlayPause.setOnClickListener {
             if (isPlaying) {
