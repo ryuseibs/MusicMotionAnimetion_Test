@@ -9,7 +9,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="buttonColor">#6200EE</color> <!-- 背景色 -->
     <color name="buttonTextColor">#FFFFFF</color> <!-- 白 -->
-    <color name="backgroundColor">#121212</color> <!-- ダークグレー -->
+    <color name="backgroundColor">#FFFFFF</color> <!-- ダークグレー -->
     <color name="textColor">#FFFFFF</color> <!-- 白 -->
     <color name="iconColor">#FFFFFF</color> <!-- 白（アイコン） -->
     <color name="toolbarColor">#FFFFFF</color>
