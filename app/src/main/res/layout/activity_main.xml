@@ -6,6 +6,13 @@
     android:background="@color/backgroundColor"
     android:padding="16dp">
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/toolbarColor"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
+
     <!-- アートワークをリストの上に配置 -->
     <ImageView
         android:id="@+id/artworkImage"
@@ -19,49 +26,12 @@
         android:elevation="8dp"/> <!-- 影を追加 -->
 
     <!-- RecyclerView の高さを調整（リスト表示） -->
+    <!--
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="600dp">
-
-        <!-- 曲一覧へ遷移するボタン -->
-        <ImageButton
-            android:id="@+id/btnMusicList"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="8dp"
-            android:src="@drawable/ic_chevron_left"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/iconColor" />
-
-        <!-- アルバム一覧へ遷移するボタン -->
-        <ImageButton
-            android:id="@+id/btnAlbumList"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="8dp"
-            android:src="@drawable/ic_chevron_left"
-            app:layout_constraintStart_toEndOf="@id/btnMusicList"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/iconColor" />
-
-        <!-- アーティスト一覧へ遷移するボタン -->
-        <ImageButton
-            android:id="@+id/btnArtistList"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="8dp"
-            android:src="@drawable/ic_chevron_left"
-            app:layout_constraintStart_toEndOf="@id/btnAlbumList"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/iconColor" />
     </androidx.constraintlayout.widget.ConstraintLayout>
+    -->
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"

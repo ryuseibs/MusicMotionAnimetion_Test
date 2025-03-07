@@ -12,4 +12,5 @@
     <color name="backgroundColor">#121212</color> <!-- ダークグレー -->
     <color name="textColor">#FFFFFF</color> <!-- 白 -->
     <color name="iconColor">#FFFFFF</color> <!-- 白（アイコン） -->
+    <color name="toolbarColor">#FFFFFF</color>
 </resources>

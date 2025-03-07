@@ -27,6 +27,9 @@ import android.widget.SeekBar
 import android.view.animation.AnimationUtils
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.widget.Toolbar
 
 data class Song(val title: String, val artist: String, val album: String, val datapass: String, val uri: Uri)
 
@@ -53,20 +56,17 @@ class MainActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
         artworkImage = findViewById(R.id.artworkImage)
 
-        findViewById<ImageButton>(R.id.btnMusicList).setOnClickListener {
-            val intent = Intent(this, MusicListActivity::class.java)
-            startActivity(intent)
-        }
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        findViewById<ImageButton>(R.id.btnAlbumList).setOnClickListener {
-            val intent = Intent(this,AlbumListActivity::class.java)
-            startActivity(intent)
-        }
-
-        findViewById<ImageButton>(R.id.btnArtistList).setOnClickListener {
-            val intent =Intent(this,ArtistListActivity::class.java)
-            startActivity(intent)
-        }
+        // 戻るボタン無効化 or メッセージ表示
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                Toast.makeText(this@MainActivity, "ホーム画面です", Toast.LENGTH_SHORT).show()
+                // 何もしないので終了しない
+            }
+        })
 
         // 再生・停止ボタン
         btnPlayPause.setOnClickListener {
@@ -356,5 +356,10 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         mediaPlayer?.release()
         mediaPlayer = null
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressedDispatcher.onBackPressed()
+        return true
     }
 }
