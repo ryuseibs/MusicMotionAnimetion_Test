@@ -40,9 +40,9 @@ class MusicListActivity : AppCompatActivity() {
                     MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id
                 )
                 // MusicListActivity 内で曲をタップした時
-                val intent = Intent(this, MainActivity::class.java)
-                intent.putExtra("selectedSongUri", songUri.toString())
-                startActivity(intent)
+                //val intent = Intent(this, MainActivity::class.java)
+                //intent.putExtra("selectedSongUri", songUri.toString())
+                //startActivity(intent)
             }
         }
     }
