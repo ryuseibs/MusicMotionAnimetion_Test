@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnPlayPause: Button
     private var isPlaying = false // 再生中かどうかを管理
     private var currentIndex = 0 // 現在再生中の曲のインデックス
-    private lateinit var seekBar: SeekBar
+    private var seekBar: SeekBar? = null
     private val handler = Handler(Looper.getMainLooper()) // メインスレッドで更新するハンドラー
     private lateinit var artworkImage: ImageView
 
@@ -59,6 +59,10 @@ class MainActivity : AppCompatActivity() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        seekBar = findViewById(R.id.seekBar)
+        seekBar?.max = mediaPlayer?.duration ?: 0
+        seekBar?.progress = 0
 
         // 戻るボタン無効化 or メッセージ表示
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -81,6 +85,21 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // **曲一覧画面から選択された場合
+        val songUriString = intent.getStringExtra("SONG_URI")
+        val albumId = intent.getLongExtra("ALBUM_ID", -1L)
+
+        val songUri = songUriString?.let { Uri.parse(it) }
+
+        Log.d("MusicDebug", "🎵 MainActivity で受信: songUri=$songUri, albumId=$albumId")
+
+        if (songUri != null && albumId != -1L) {
+            Log.d("MusicDebug", "受信データが有効: 再生開始")
+            playMusic(songUri,albumId)
+        } else {
+            Log.e("MusicDebug", "受信データが無効: songUri=$songUri, albumId=$albumId")
+        }
+
         // 前の曲・次の曲ボタン
         val btnPrev: Button = findViewById(R.id.btnPrev)
         val btnNext: Button = findViewById(R.id.btnNext)
@@ -93,10 +112,7 @@ class MainActivity : AppCompatActivity() {
             playNextSong()
         }
 
-        seekBar = findViewById(R.id.seekBar)
-        seekBar.max = 0 // 最初は 0 にしておく
-
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) { // ユーザーが操作した場合のみ
                     mediaPlayer?.seekTo(progress) // 指定位置に移動
@@ -260,6 +276,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun playMusic(uri: Uri, albumId: Long) {
+        if (seekBar == null) {
+            return
+        }
+
         mediaPlayer?.release()
         mediaPlayer = MediaPlayer().apply {
             setDataSource(applicationContext, uri)
@@ -273,12 +293,12 @@ class MainActivity : AppCompatActivity() {
             start()
 
             // シークバーの最大値を曲の長さに設定
-            seekBar.max = duration
-            seekBar.progress = 0
+            seekBar?.max = duration
+            seekBar?.progress = 0
 
             // シークバーの更新開始
             handler.post(updateSeekBar)
-            Log.d("SeekBar", "Max: ${seekBar.max}, Progress: ${seekBar.progress}")
+            Log.d("SeekBar", "Max: ${seekBar?.max}, Progress: ${seekBar?.progress}")
 
             // アートワークの表示 & アニメーション適用
             val albumArt = getAlbumArt(albumId)
@@ -324,7 +344,7 @@ class MainActivity : AppCompatActivity() {
         override fun run() {
             mediaPlayer?.let {
                 val currentPosition = it.currentPosition // 現在の再生位置
-                seekBar.progress = currentPosition // シークバーを更新
+                seekBar?.progress = currentPosition // シークバーを更新
                 handler.postDelayed(this, 500) // 0.5秒ごとに更新
             }
         }

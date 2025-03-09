@@ -1,5 +1,6 @@
 package com.example.music_animetion_test
 
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,6 +15,12 @@ data class MusicItem(val title: String, val artist: String, val uri: Uri, val al
 // Adapterクラス
 class MusicAdapter(private val musicList: List<MusicItem>) :
     RecyclerView.Adapter<MusicAdapter.MusicViewHolder>() {
+
+    private var onItemClickListener: ((MusicItem) -> Unit)? = null
+
+    fun setOnItemClickListener(listener: (MusicItem) -> Unit) {
+        onItemClickListener = listener
+    }
 
     // ViewHolder（1つのリストアイテムを管理）
     class MusicViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -32,6 +39,12 @@ class MusicAdapter(private val musicList: List<MusicItem>) :
         Log.d("MusicDebug", "Binding ViewHolder: ${item.title} by ${item.artist} URI:${item.uri}" )  // 追加
         holder.titleTextView.text = item.title
         holder.artistTextView.text = item.artist
+
+        // **リストの曲をタップしたら再生**
+        holder.itemView.setOnClickListener {
+            Log.d("MusicDebug", "🎵 Adapter でタップ: ${item.title} - ${item.uri}") // 確認用ログ
+            onItemClickListener?.invoke(item)
+        }
     }
 
     override fun getItemCount(): Int = musicList.size
