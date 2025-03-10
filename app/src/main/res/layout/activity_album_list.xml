@@ -13,4 +13,10 @@
         android:text="アルバム一覧画面"
         android:textSize="24sp"
         android:textColor="@color/textColor"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewAlbum"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
 </LinearLayout>
