@@ -37,8 +37,16 @@ class AlbumListActivity : AppCompatActivity() {
         }
         recyclerView.adapter = albumAdapter
 
-        // 取得したアルバムをリストに追加
-        loadAlbums()
+        val artistId = intent.getLongExtra("artistId", -1L)
+        Log.d("AlbumListActivity", "受け取った artistId: $artistId") // ✅ 受け取ったIDをログ出力
+
+        if (artistId != -1L) {
+            Log.e("AlbumListActivity", "artistIdから受け取り")
+            loadAlbumbyArtist(artistId)
+        } else {
+            // 取得したアルバムをリストに追加
+            loadAlbums()
+        }
     }
 
     //権限チェック用の関数
