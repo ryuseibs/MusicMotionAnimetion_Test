@@ -24,7 +24,7 @@ class ArtistListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_artist_list)
 
-        recyclerView = findViewById(R.id.)
+        recyclerView = findViewById(R.id.recyclerViewArtist)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
         // 権限チェック実行
