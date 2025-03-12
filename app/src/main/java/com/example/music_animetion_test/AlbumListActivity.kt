@@ -37,12 +37,12 @@ class AlbumListActivity : AppCompatActivity() {
         }
         recyclerView.adapter = albumAdapter
 
-        val artistId = intent.getLongExtra("artistId", -1L)
+        val artistId = intent.getLongExtra("artistId", -1)
         Log.d("AlbumListActivity", "受け取った artistId: $artistId") // ✅ 受け取ったIDをログ出力
 
         if (artistId != -1L) {
             Log.e("AlbumListActivity", "artistIdから受け取り")
-            loadAlbumbyArtist(artistId)
+            loadAlbumByArtist(artistId)
         } else {
             // 取得したアルバムをリストに追加
             loadAlbums()
@@ -97,4 +97,44 @@ class AlbumListActivity : AppCompatActivity() {
         albumAdapter.notifyDataSetChanged() //リスト更新
     }
 
+    private fun loadAlbumByArtist(artistId: Long) {
+        Log.d("AlbumDebug", "loadAlbumByArtist() called")  // 確認用ログ
+
+        albumList.clear()
+
+        val progression = arrayOf(
+            MediaStore.Audio.Albums._ID,
+            MediaStore.Audio.Albums.ALBUM,
+            MediaStore.Audio.Albums.ARTIST
+        )
+
+        val cursor: Cursor? = contentResolver.query(
+            MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+            progression,
+            "${MediaStore.Audio.Albums.ARTIST_ID} = ?",
+            arrayOf(artistId.toString()),
+            MediaStore.Audio.Albums.ALBUM + " ASC"
+        )
+
+        cursor?.use {
+            val idColumn = it.getColumnIndex(MediaStore.Audio.Albums._ID)
+            val albumColumn = it.getColumnIndex(MediaStore.Audio.Albums.ALBUM)
+            val artistColumn = it.getColumnIndex(MediaStore.Audio.Albums.ARTIST)
+            val uniqueAlbums = mutableSetOf<Long>() //重複IDを除外
+
+            while (it.moveToNext()) {
+                val id = it.getLong(idColumn)
+                if(uniqueAlbums.contains(id)) continue
+                uniqueAlbums.add(id)
+
+                val albumName = it.getString(albumColumn) ?: "Unknown Album"
+                val artistName = it.getString(artistColumn) ?: "Unknown Artist"
+
+                albumList.add(AlbumItem(id,albumName,artistName))
+                Log.d("AlbumDebug", "Found Album: $albumName by $artistName , ID :$id")
+            }
+        }
+        Log.d("AlbumDebug", "Retrieved ${albumList.size} albums")
+        albumAdapter.notifyDataSetChanged() //リスト更新
+    }
 }
