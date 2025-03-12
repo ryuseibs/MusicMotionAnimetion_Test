@@ -53,8 +53,17 @@ class MusicListActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // 取得した曲をリストに追加
-        loadMusic()
+        val albumId =intent.getLongExtra("albumId",-1L)
+        Log.d("MusicListActivity", "受け取った albumId: $albumId") // ✅ 受け取ったIDをログ出力
+
+        if (albumId != -1L) {
+            Log.e("MusicListActivity", "albumIdから受け取り")
+            // 取得したアルバムより該当する曲に追加
+            loadMusicByAlbum(albumId)
+        } else {
+            // 取得した曲をリストに追加
+            loadMusic()
+        }
     }
 
     //権限チェック用の関数
@@ -124,4 +133,36 @@ class MusicListActivity : AppCompatActivity() {
         Log.d("MusicDebug", "RecyclerView updated, total items: ${musicList.size}")
     }
 
+    // アルバム画面から選択後曲情報を取得する（View)
+    private fun loadMusicByAlbum(albumId: Long) {
+        Log.d("MusicDebug", "loadMusicByAlbum() called")  // 確認用ログ
+
+        val cursor = contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(
+                MediaStore.Audio.Media._ID,
+                MediaStore.Audio.Media.TITLE,
+                MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media.ALBUM_ID),
+            "${MediaStore.Audio.Media.ALBUM_ID} = ?",
+            arrayOf(albumId.toString()),
+            MediaStore.Audio.Media.TITLE + " ASC"
+        )
+        cursor?.use {
+            val idColumn = it.getColumnIndex(MediaStore.Audio.Media._ID)
+            val titleColumn = it.getColumnIndex(MediaStore.Audio.Media.TITLE)
+            val artistColumn = it.getColumnIndex(MediaStore.Audio.Media.ARTIST)
+
+            while(it.moveToNext()) {
+                val id = it.getLong(idColumn)
+                val title = it.getString(titleColumn)
+                val artist = it.getString(artistColumn)
+                val songUri = ContentUris.withAppendedId(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id
+                )
+
+                musicList.add(MusicItem(title, artist, songUri, albumId))
+            }
+        }
+    }
 }
