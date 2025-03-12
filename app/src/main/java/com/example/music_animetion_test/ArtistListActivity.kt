@@ -30,6 +30,10 @@ class ArtistListActivity : AppCompatActivity() {
         // 権限チェック実行
         checkPermission()
 
+        // Adapterをセット
+        artistAdapter = ArtistAdapter(artistList)
+        recyclerView.adapter = artistAdapter
+
         // 取得したアーティストをリストに追加
         loadArtists()
     }
