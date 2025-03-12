@@ -1,5 +1,6 @@
 package com.example.music_animetion_test
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,7 +29,13 @@ class AlbumAdapter(
         holder.albumnameTextView.text = album.albumName
         holder.artistNameTextView.text = album.artistName
 
-        holder.itemView.setOnClickListener{ onItemClick(album) }
+        holder.itemView.setOnClickListener {
+        val intent = Intent(holder.itemView.context, MusicListActivity::class.java).apply {
+            putExtra("albumId", album.albumId)
+            putExtra("albumName", album.albumName)
+            }
+            holder.itemView.context.startActivity(intent)
+        }
     }
 
     override fun getItemCount(): Int = albumlist.size
