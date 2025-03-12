@@ -15,7 +15,6 @@ class AlbumAdapter(
     class AlbumViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val albumnameTextView: TextView = view.findViewById(R.id.albumNameTextView)
         val artistNameTextView: TextView = view.findViewById(R.id.artistNameTextView)
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlbumViewHolder {
@@ -37,6 +36,5 @@ class AlbumAdapter(
             holder.itemView.context.startActivity(intent)
         }
     }
-
     override fun getItemCount(): Int = albumlist.size
 }
