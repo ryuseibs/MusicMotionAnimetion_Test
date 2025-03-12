@@ -17,7 +17,7 @@ class AlbumListActivity : AppCompatActivity() {
 
     private val REQUEST_CODE = 100
     private lateinit var recyclerView: RecyclerView
-    //TODO: private lateinit var albumAdapter: AlbumAdapter
+    private lateinit var albumAdapter: AlbumAdapter
     private var albumList: MutableList<AlbumItem> = mutableListOf() // アルバムリスト
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,8 +31,11 @@ class AlbumListActivity : AppCompatActivity() {
         checkPermission()
 
         // Adapterをセット
-        // TODO: albumAdapter = AlbumAdapter(albumList)
-        // TODO: recyclerView.adapter = albumAdapter
+        albumAdapter = AlbumAdapter(albumList) { albumItem ->
+            // クリック時の処理（次の画面に遷移する場合など）
+            Log.d("AlbumDebug", "Clicked album: ${albumItem.albumName} by ${albumItem.artistName}")
+        }
+        recyclerView.adapter = albumAdapter
 
         // 取得したアルバムをリストに追加
         loadAlbums()
@@ -83,7 +86,7 @@ class AlbumListActivity : AppCompatActivity() {
             }
         }
         Log.d("AlbumDebug", "Retrieved ${albumList.size} albums")
-        // TODO: albumAdapter.notifyDataSetChanged() //リスト更新
+        albumAdapter.notifyDataSetChanged() //リスト更新
     }
 
 }
