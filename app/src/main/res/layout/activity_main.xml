@@ -46,7 +46,8 @@
         android:id="@+id/listView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0"/> <!-- `ListView` の高さを 0 にして影響をなくす -->
+        android:layout_weight="0"
+        android:visibility="gone"/> <!-- `ListView` の高さを 0 にして影響をなくす -->
 
     <!-- シークバーをボタンの上に配置 -->
     <SeekBar
